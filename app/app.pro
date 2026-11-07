@@ -580,7 +580,7 @@ macx {
 
 # VERSION must stay numeric (it feeds the Windows version resource), so the
 # fork's release suffix is only appended to the displayed version string.
-FORK_VERSION_SUFFIX = -bigscreen.3
+FORK_VERSION_SUFFIX = -bigscreen.4
 VERSION = "$$cat(version.txt)"
 DEFINES += VERSION_STR=\\\"$$cat(version.txt)$$FORK_VERSION_SUFFIX\\\"
 DEFINES += MOONLIGHT_FORK_DISABLE_UPDATE_CHECK

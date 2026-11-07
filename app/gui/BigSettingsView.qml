@@ -465,6 +465,11 @@ BigScreenPage {
                            function() { return StreamingPreferences.keepAwake },
                            function(v) { StreamingPreferences.keepAwake = v }))
 
+        ui.push(boolToggle(qsTr("Ask before quitting Moonlight"),
+                           qsTr("Shows a confirmation before Moonlight closes from Exit or from pressing B on the home screen."),
+                           function() { return StreamingPreferences.confirmQuit },
+                           function(v) { StreamingPreferences.confirmQuit = v }))
+
         cats.push({ name: qsTr("Interface"), items: ui })
 
         // ---- Input ----

@@ -102,7 +102,7 @@ BigScreenPage {
             Qt.openUrlExternally("https://github.com/moonlight-stream/moonlight-docs/wiki/Setup-Guide")
             break
         case "exit":
-            quitConfirmationDialog.open()
+            window.requestQuit()
             break
         }
     }

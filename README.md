@@ -1,114 +1,88 @@
-# Moonlight PC
+# Moonlight Big Screen
 
-[Moonlight PC](https://moonlight-stream.org) is an open source PC client for NVIDIA GameStream and [Sunshine](https://github.com/LizardByte/Sunshine).
+A fork of [Moonlight PC](https://github.com/moonlight-stream/moonlight-qt) with a **big-screen interface built for controllers**, for streaming games from your PC to a TV, a couch PC or a **Steam Deck**.
 
-Moonlight also has mobile versions for [Android](https://github.com/moonlight-stream/moonlight-android) and [iOS](https://github.com/moonlight-stream/moonlight-ios).
+Moonlight streams games from a PC running [Sunshine](https://github.com/LizardByte/Sunshine) or NVIDIA GameStream. This fork keeps everything Moonlight does and adds a console-style interface: large tiles, everything reachable with a gamepad, and on-screen button hints. The regular desktop interface is still there, unchanged, whenever you want it.
 
-You can follow development on our [Discord server](https://moonlight-stream.org/discord) and help translate Moonlight into your language on [Weblate](https://hosted.weblate.org/projects/moonlight/moonlight-qt/).
+![Home screen](docs/screenshots/home.png)
 
- [![Build](https://img.shields.io/github/actions/workflow/status/moonlight-stream/moonlight-qt/build.yml?branch=master)](https://github.com/moonlight-stream/moonlight-qt/actions/workflows/build.yml?query=branch%3Amaster)
- [![Downloads](https://img.shields.io/github/downloads/moonlight-stream/moonlight-qt/total)](https://github.com/moonlight-stream/moonlight-qt/releases)
- [![Translation Status](https://hosted.weblate.org/widgets/moonlight/-/moonlight-qt/svg-badge.svg)](https://hosted.weblate.org/projects/moonlight/moonlight-qt/)
+## What's different from Moonlight
 
-## Features
- - Hardware accelerated video decoding on Windows, Mac, and Linux
- - H.264, HEVC, and AV1 codec support (AV1 requires Sunshine and a supported host GPU)
- - YUV 4:4:4 support (Sunshine only)
- - HDR streaming support
- - 7.1 surround sound audio support
- - 10-point multitouch support (Sunshine only)
- - Gamepad support with force feedback and motion controls for up to 16 players
- - Support for both pointer capture (for games) and direct mouse control (for remote desktop)
- - Support for passing system-wide keyboard shortcuts like Alt+Tab to the host
- 
-## Downloads
-- [Windows, macOS, and Steam Link](https://github.com/moonlight-stream/moonlight-qt/releases)
-- [Snap (for Ubuntu-based Linux distros)](https://snapcraft.io/moonlight)
-- [Flatpak (for other Linux distros)](https://flathub.org/apps/details/com.moonlight_stream.Moonlight)
-- [AppImage](https://github.com/moonlight-stream/moonlight-qt/releases)
-- [Raspberry Pi 4 and 5](https://github.com/moonlight-stream/moonlight-docs/wiki/Installing-Moonlight-Qt-on-Raspberry-Pi-4)
-- [Generic ARM 32-bit and 64-bit Debian packages](https://github.com/moonlight-stream/moonlight-docs/wiki/Installing-Moonlight-Qt-on-ARM%E2%80%90based-Single-Board-Computers) (not for Raspberry Pi)
-- [Experimental RISC-V Debian packages](https://github.com/moonlight-stream/moonlight-docs/wiki/Installing-Moonlight-Qt-on-RISC%E2%80%90V-Single-Board-Computers)
-- [NVIDIA Jetson and Nintendo Switch (Ubuntu L4T)](https://github.com/moonlight-stream/moonlight-docs/wiki/Installing-Moonlight-Qt-on-Linux4Tegra-(L4T)-Ubuntu)
+### A big-screen interface
+- **Home screen** with large PC tiles that show each PC's status (online, offline, not paired), and buttons for Add PC, Settings, Controls, Help and Exit.
+- **Game grid** with large box art, a "Running" badge, and the name of the selected game in the header.
+- **Settings redesigned for controllers**: category tabs you switch with **LB / RB**, and every setting changed with **left / right**. A description of the selected setting is shown at the bottom.
+- **Menus and dialogs** restyled to match, with large text and a clear focus highlight.
+- **Controller hints** along the bottom of every screen (A / B / X / Y, with Nintendo-style labels if you swap the buttons).
+- **Controls page** listing every gamepad, mouse-mode and keyboard shortcut you can use while streaming.
+- Holding the D-pad scrolls continuously.
 
-### Nightly Builds
-- [Downloads](https://nightly.link/moonlight-stream/moonlight-qt/workflows/build/master)
+| Games | Settings |
+|---|---|
+| ![Game grid](docs/screenshots/games.png) | ![Settings](docs/screenshots/settings.png) |
+| **Options menu** | **Controls** |
+| ![Options menu](docs/screenshots/pc-menu.png) | ![Controls page](docs/screenshots/controls.png) |
 
-#### Special Thanks
+### Made for the Steam Deck
+- **Starts in big-screen mode automatically** in Steam's Game Mode and Big Picture mode.
+- **Ignores the Deck's built-in controls while another controller is connected**, so games like RetroArch don't pick the Deck as player 1. The built-in controls come back as soon as the other controller disconnects. *(Settings → Gamepad, on by default.)*
+- Laid out and tested for the Deck's 1280×800 screen.
 
-[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=flat-square)](https://cloudsmith.com)
+![Gamepad settings](docs/screenshots/settings-gamepad.png)
 
-Hosting for Moonlight's Debian and L4T package repositories is graciously provided for free by [Cloudsmith](https://cloudsmith.com).
+### Smaller changes
+- **Option to hide the red "Gamepad mouse mode active" text** while using a controller as a mouse. *(Settings → Gamepad.)*
+- **No "Are you sure you want to quit?" prompt** when you exit. Turn it back on with *Settings → Interface → Ask before quitting Moonlight*.
+- New installs **start in big-screen mode**. Switch to the desktop interface with *Settings → Interface → GUI display mode → Windowed* and restart.
+- The upstream update check is turned off, since it would point to official Moonlight releases that don't include these changes.
+
+## When the big-screen interface is used
+
+It's used when any of these is true:
+- **GUI display mode** is set to **Fullscreen** (the default for new installs)
+- Moonlight is launched from **Steam Game Mode or Big Picture**
+- There's no desktop environment (for example a Raspberry Pi booted to a console)
+
+You can force it either way with the `BIG_SCREEN_MODE=1` or `BIG_SCREEN_MODE=0` environment variable.
+
+## Download
+
+Get the latest version from the [Releases page](https://github.com/dwolp/moonlight-qt/releases).
+
+### Steam Deck / Linux (AppImage)
+1. Switch to **Desktop Mode** and download `Moonlight-…-x86_64.AppImage`.
+2. Put it somewhere permanent, such as `~/Applications`.
+3. Right-click it → **Properties** → **Permissions** → tick **Is executable**.
+4. In Steam: **Games → Add a Non-Steam Game to My Library**, then browse to the AppImage.
+5. Switch back to **Game Mode** and launch Moonlight from your library.
+
+There's nothing to install. To update, replace the file with the new one and keep the same name so your Steam shortcut keeps working. Your settings and paired PCs are kept.
+
+### Windows (portable)
+Unzip `MoonlightPortable-x64-….zip` anywhere and run `Moonlight.exe`. Settings are stored in the same folder.
+
+## Controller shortcuts while streaming
+
+| Buttons | What it does |
+|---|---|
+| Select + Start + LB + RB | Leave the stream (the game keeps running on your PC) |
+| Select + LB + RB + X | Show or hide performance stats |
+| Hold Start | Turn gamepad mouse mode on or off |
+
+All shortcuts, including the keyboard ones, are on the **Controls** page on the home screen.
 
 ## Building
 
-### Windows Build Requirements
-* Qt 6.11 SDK or later (earlier versions may work but are not officially supported)
-* [Visual Studio 2026](https://visualstudio.microsoft.com/downloads/) (Community edition is fine)
-* Select **MSVC** option during Qt installation. MinGW is not supported.
-* [7-Zip](https://www.7-zip.org/) (only if building installers for non-development PCs)
-* Graphics Tools (only if running debug builds)
-  * Install "Graphics Tools" in the Optional Features page of the Windows Settings app.
-  * Alternatively, run `dism /online /add-capability /capabilityname:Tools.Graphics.DirectX~~~~0.0.1.0` and reboot.
+This fork builds exactly like upstream Moonlight. See the [upstream build instructions](https://github.com/moonlight-stream/moonlight-qt#building). In short:
 
-### macOS Build Requirements
-* Qt 6.11 SDK or later (earlier versions may work but are not officially supported)
-* Xcode 15 or later (earlier versions may work but are not officially supported)
-* [create-dmg](https://github.com/sindresorhus/create-dmg) (only if building DMGs for use on non-development Macs)
+1. Install the Qt 6 SDK (on Windows, choose the **MSVC** kit; MinGW isn't supported).
+2. Run `git submodule update --init --recursive`, and on Windows also `setup-deps.ps1`.
+3. Open `moonlight-qt.pro` in Qt Creator, or run `qmake` followed by `make` / `nmake` / `jom`.
 
-### Linux/Unix Build Requirements
-* Qt 6 is recommended, but Qt 5.12 or later is also supported (replace `qmake6` with `qmake` when using Qt 5).
-* GCC or Clang
-* FFmpeg 4.0 or later
-* Install the required packages:
-  * Debian/Ubuntu:
-    * Base Requirements: `libegl1-mesa-dev libgl1-mesa-dev libopus-dev libsdl2-dev libsdl2-ttf-dev libssl-dev libavcodec-dev libavformat-dev libswscale-dev libva-dev libvdpau-dev libxkbcommon-dev wayland-protocols libdrm-dev`
-    * Qt 6 (Recommended): `qt6-base-dev qt6-declarative-dev libqt6svg6-dev qt6-wayland qml6-module-qtquick-controls qml6-module-qtquick-templates qml6-module-qtquick-layouts qml6-module-qtqml-workerscript qml6-module-qtquick-window qml6-module-qtquick`
-    * Qt 5: `qtbase5-dev qt5-qmake qtdeclarative5-dev qtquickcontrols2-5-dev qml-module-qtquick-controls2 qml-module-qtquick-layouts qml-module-qtquick-window2 qml-module-qtquick2 qtwayland5`
-  * RedHat/Fedora (RPM Fusion repo required):
-    * Base Requirements: `openssl-devel SDL2-devel SDL2_ttf-devel ffmpeg-devel libva-devel libvdpau-devel opus-devel pulseaudio-libs-devel alsa-lib-devel libdrm-devel`
-    * Qt 6 (Recommended): `qt6-qtsvg-devel qt6-qtdeclarative-devel`
-    * Qt 5: `qt5-qtsvg-devel qt5-qtquickcontrols2-devel`
-* Building the Vulkan renderer requires a `libplacebo-dev`/`libplacebo-devel` version of at least v7.349.0 and FFmpeg 6.1 or later.
+Pushing to `master` runs GitHub Actions, which builds the Linux AppImage plus Windows, macOS and Steam Link versions.
 
-### Steam Link Build Requirements
-* [Steam Link SDK](https://github.com/ValveSoftware/steamlink-sdk) cloned on your build system
-* STEAMLINK_SDK_PATH environment variable set to the Steam Link SDK path
+## Credits and license
 
-**Steam Link Hardware Limitations**  
-Moonlight builds for Steam Link are subject to hardware limitations of the Steam Link device:
-* Maximum resolution: **1080p (1920x1080)**
-* Maximum framerate: **60 FPS**
-* Maximum video bitrate: **40 Mbps**
-* **HDR streaming is not supported** on the original hardware
+All the streaming work is [Moonlight](https://moonlight-stream.org), by the Moonlight developers and contributors. This fork only changes the interface and a few controller behaviours. For help with streaming itself, see the [Moonlight setup guide](https://github.com/moonlight-stream/moonlight-docs/wiki/Setup-Guide).
 
-### Docker containers
-If you want to use Docker for building, look at [this repo](https://github.com/cgutman/moonlight-packaging) containing canonical containers
-for different architectures, which handle building deps and extra linking for you.
-
-### Build Setup Steps
-1. Install the latest Qt SDK (and optionally, the Qt Creator IDE) from https://www.qt.io/download
-    * You can install Qt via Homebrew on macOS, but you will need to use `brew install qt --with-debug` to be able to create debug builds of Moonlight.
-    * You may also use your Linux distro's package manager for the Qt SDK as long as the packages are Qt 5.12 or later.
-    * This step is not required for building on Steam Link, because the Steam Link SDK includes Qt 5.14.
-2. Download submodules and dependencies
-    * Run `git submodule update --init --recursive` from within `moonlight-qt/`.
-    * On Windows and macOS, you must also run `setup-deps.ps1` (Windows) or `setup-deps.py` (macOS).
-    * Perform these steps each time you pull new changes from the Git repository.
-3. Open the project in Qt Creator or build from qmake on the command line.
-    * To build a binary for use on non-development machines, use the scripts in the `scripts` folder.
-        * For Windows builds, use `scripts\build-arch.bat` and `scripts\generate-bundle.bat`. Execute these scripts from the root of the repository within a Qt command prompt. Ensure  7-Zip binary directory is on your `%PATH%`.
-        * For macOS builds, use `scripts/generate-dmg.sh`. Execute this script from the root of the repository and ensure Qt's `bin` folder is in your `$PATH`.
-        * For Steam Link builds, run `scripts/build-steamlink-app.sh` from the root of the repository.
-    * To build from the command line for development use on macOS or Linux, run `qmake6 moonlight-qt.pro` then `make debug` or `make release`.
-        * The final binary will be placed in `app/moonlight`.
-    * To create an embedded build for a single-purpose device, use `qmake6 "CONFIG+=embedded" moonlight-qt.pro` and build normally.
-        * This build will lack windowed mode, Discord/Help links, and other features that don't make sense on an embedded device.
-        * For platforms with poor GPU performance, add `"CONFIG+=gpuslow"` to prefer direct KMSDRM rendering over GL/Vulkan renderers. Direct KMSDRM rendering can use dedicated YUV/RGB conversion and scaling hardware rather than slower GPU shaders for these operations.
-
-## Contribute
-1. Fork us
-2. Write code
-3. Send Pull Requests
-
-Check out our [website](https://moonlight-stream.org) for project links and information.
+Like Moonlight, this fork is licensed under the [GNU General Public License v3](LICENSE).

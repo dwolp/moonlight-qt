@@ -1311,6 +1311,17 @@ Flickable {
                     ToolTip.visible: hovered
                     ToolTip.text: qsTr("Prevents the screensaver from starting or the display from going to sleep while streaming.")
                 }
+
+                CheckBox {
+                    id: confirmQuitCheck
+                    width: parent.width
+                    text: qsTr("Ask before quitting Moonlight")
+                    font.pointSize: 12
+                    checked: StreamingPreferences.confirmQuit
+                    onCheckedChanged: {
+                        StreamingPreferences.confirmQuit = checked
+                    }
+                }
             }
         }
     }

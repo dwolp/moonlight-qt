@@ -190,7 +190,7 @@ ApplicationWindow {
                 goBack()
             }
             else {
-                quitConfirmationDialog.open()
+                window.requestQuit()
             }
         }
 
@@ -199,7 +199,7 @@ ApplicationWindow {
                 goBack()
             }
             else {
-                quitConfirmationDialog.open()
+                window.requestQuit()
             }
         }
 
@@ -548,6 +548,16 @@ ApplicationWindow {
         helpTextSeparator: "\n\n"
         helpText: qsTr("Click the Help button for information on how to map your gamepads.")
         helpUrl: "https://github.com/moonlight-stream/moonlight-docs/wiki/Gamepad-Mapping"
+    }
+
+    // Quit, asking first only if the user turned that on in settings
+    function requestQuit() {
+        if (StreamingPreferences.confirmQuit) {
+            quitConfirmationDialog.open()
+        }
+        else {
+            Qt.quit()
+        }
     }
 
     // This dialog appears when quitting via keyboard or gamepad button
