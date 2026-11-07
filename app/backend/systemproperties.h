@@ -22,6 +22,7 @@ public:
     Q_PROPERTY(bool isDarwin MEMBER isDarwin CONSTANT)
     Q_PROPERTY(QString friendlyNativeArchName MEMBER friendlyNativeArchName CONSTANT)
     Q_PROPERTY(bool hasDesktopEnvironment MEMBER hasDesktopEnvironment CONSTANT)
+    Q_PROPERTY(bool prefersBigScreen MEMBER prefersBigScreen CONSTANT)
     Q_PROPERTY(bool hasBrowser MEMBER hasBrowser CONSTANT)
     Q_PROPERTY(bool hasDiscordIntegration MEMBER hasDiscordIntegration CONSTANT)
     Q_PROPERTY(bool usesMaterial3Theme MEMBER usesMaterial3Theme CONSTANT)
@@ -63,6 +64,7 @@ private:
     bool isWow64;
     QString friendlyNativeArchName;
     bool hasDesktopEnvironment;
+    bool prefersBigScreen;
     bool hasBrowser;
     bool hasDiscordIntegration;
     QString versionString;

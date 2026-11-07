@@ -55,8 +55,9 @@ ApplicationWindow {
         }
 
         // Use the big-screen UI when there's no desktop environment (Steam Link,
-        // Raspberry Pi without a desktop, etc.) or when the GUI is set to fullscreen.
-        bigScreen = !SystemProperties.hasDesktopEnvironment ||
+        // Raspberry Pi without a desktop, etc.), in Steam's Game Mode / Big Picture
+        // (Steam Deck), or when the GUI is set to fullscreen.
+        bigScreen = SystemProperties.prefersBigScreen ||
                     StreamingPreferences.uiDisplayMode === StreamingPreferences.UI_FULLSCREEN
 
         updateBigScreenFont()

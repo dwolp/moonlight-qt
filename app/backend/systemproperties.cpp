@@ -48,6 +48,21 @@ SystemProperties::SystemProperties()
 {
     versionString = QString(VERSION_STR);
     hasDesktopEnvironment = WMUtils::isRunningDesktopEnvironment();
+
+    // Use the big-screen UI without a desktop environment, and in Steam's
+    // Game Mode / Big Picture (e.g. Steam Deck), which sets SteamGamepadUI for
+    // the games it launches and runs inside a gamescope session.
+    // BIG_SCREEN_MODE=0/1 overrides the detection.
+    bool bigScreenOverrideSet;
+    int bigScreenOverride = qEnvironmentVariableIntValue("BIG_SCREEN_MODE", &bigScreenOverrideSet);
+    if (bigScreenOverrideSet) {
+        prefersBigScreen = bigScreenOverride != 0;
+    }
+    else {
+        prefersBigScreen = !hasDesktopEnvironment ||
+                           qEnvironmentVariableIntValue("SteamGamepadUI") == 1 ||
+                           qEnvironmentVariable("XDG_CURRENT_DESKTOP").compare("gamescope", Qt::CaseInsensitive) == 0;
+    }
     isRunningWayland = WMUtils::isRunningWayland();
     isRunningXWayland = isRunningWayland && QGuiApplication::platformName() == "xcb";
     usesMaterial3Theme = QLibraryInfo::version() >= QVersionNumber(6, 5, 0);
