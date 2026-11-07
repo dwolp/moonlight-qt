@@ -18,6 +18,29 @@ ApplicationWindow {
     // a retranslate() because AppView breaks for some reason.
     property bool clearOnBack: false
 
+    // Big-screen ("10-foot") mode is a controller-first UI with large tiles
+    // and text, intended for TVs. It's decided once at startup (in doEarlyInit)
+    // so changing the GUI display mode doesn't swap UIs out from under the user.
+    property bool bigScreen: false
+
+    // Scale factor for big-screen layouts. All big-screen sizes are designed
+    // for a 1920x1080 logical window and multiplied by this value.
+    readonly property real bsScale: Math.max(0.6, Math.min(width / 1920, height / 1080))
+
+    // Shared colors for the big-screen UI
+    readonly property QtObject bs: QtObject {
+        readonly property color bgTop: "#1B2130"
+        readonly property color bgBottom: "#0D1017"
+        readonly property color tile: "#252C3B"
+        readonly property color tileFocused: "#323C52"
+        readonly property color accent: "#4FC3F7"
+        readonly property color text: "#FFFFFF"
+        readonly property color textDim: "#A9B3C6"
+        readonly property color good: "#66BB6A"
+        readonly property color warn: "#FFB74D"
+        readonly property color bad: "#EF5350"
+    }
+
     id: window
     width: 1280
     height: 600
@@ -31,7 +54,32 @@ ApplicationWindow {
             Material.background = "#303030"
         }
 
+        // Use the big-screen UI when there's no desktop environment (Steam Link,
+        // Raspberry Pi without a desktop, etc.) or when the GUI is set to fullscreen.
+        bigScreen = !SystemProperties.hasDesktopEnvironment ||
+                    StreamingPreferences.uiDisplayMode === StreamingPreferences.UI_FULLSCREEN
+
+        updateBigScreenFont()
+
         SdlGamepadKeyNavigation.enable()
+    }
+
+    // Scale up the default font so dialogs and menus are readable from the couch
+    function updateBigScreenFont() {
+        if (bigScreen) {
+            window.font.pixelSize = Math.round(24 * bsScale)
+        }
+    }
+
+    onBsScaleChanged: updateBigScreenFont()
+
+    function openSettings() {
+        if (bigScreen) {
+            navigateTo("qrc:/gui/BigSettingsView.qml", BigSettingsView)
+        }
+        else {
+            navigateTo("qrc:/gui/SettingsView.qml", SettingsView)
+        }
     }
 
     Component.onCompleted: {
@@ -115,7 +163,13 @@ ApplicationWindow {
             // Perform our early initialization before constructing
             // the initial view and pushing it to the StackView
             doEarlyInit()
-            push(initialView)
+
+            if (bigScreen && initialView === "qrc:/gui/PcView.qml") {
+                push("qrc:/gui/BigPcView.qml")
+            }
+            else {
+                push(initialView)
+            }
         }
 
         onCurrentItemChanged: {
@@ -144,14 +198,14 @@ ApplicationWindow {
         }
 
         Keys.onMenuPressed: {
-            settingsButton.clicked()
+            openSettings()
         }
 
         // This is a keypress we've reserved for letting the
         // SdlGamepadKeyNavigation object tell us to show settings
         // when Menu is consumed by a focused control.
         Keys.onHangupPressed: {
-            settingsButton.clicked()
+            openSettings()
         }
     }
 
@@ -243,6 +297,8 @@ ApplicationWindow {
 
     header: ToolBar {
         id: toolBar
+        // Big-screen views draw their own header
+        visible: !window.bigScreen
         height: 60
         anchors.topMargin: 5
         anchors.bottomMargin: 5
@@ -434,7 +490,7 @@ ApplicationWindow {
 
                 iconSource:  "qrc:/res/settings.svg"
 
-                onClicked: navigateTo("qrc:/gui/SettingsView.qml", SettingsView)
+                onClicked: openSettings()
 
                 Keys.onDownPressed: {
                     stackView.currentItem.forceActiveFocus(Qt.TabFocus)

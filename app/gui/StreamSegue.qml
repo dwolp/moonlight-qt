@@ -102,7 +102,7 @@ Item {
 
     StackView.onDeactivating: {
         // Show the toolbar again when popped off the stack
-        toolBar.visible = true
+        toolBar.visible = !window.bigScreen
 
         // Re-enable GUI gamepad usage now
         SdlGamepadKeyNavigation.enable()

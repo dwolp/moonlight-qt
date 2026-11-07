@@ -578,5 +578,8 @@ macx {
     }
 }
 
+# VERSION must stay numeric (it feeds the Windows version resource), so the
+# fork's release suffix is only appended to the displayed version string.
+FORK_VERSION_SUFFIX = -bigscreen.1
 VERSION = "$$cat(version.txt)"
-DEFINES += VERSION_STR=\\\"$$cat(version.txt)\\\"
+DEFINES += VERSION_STR=\\\"$$cat(version.txt)$$FORK_VERSION_SUFFIX\\\"

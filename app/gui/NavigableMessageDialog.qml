@@ -13,6 +13,9 @@ NavigableDialog {
     property string helpUrl : "https://github.com/moonlight-stream/moonlight-docs/wiki/Troubleshooting"
     property string helpTextSeparator : " "
 
+    // Grow the dialog along with the larger fonts used by the big-screen UI
+    readonly property real bigScreenFactor: window.bigScreen ? Math.max(1, window.bsScale * 1.7) : 1
+
     onOpened: {
         // Force keyboard focus on the label so keyboard navigation works
         if (dialogButtonBox.count > 0) {
@@ -36,8 +39,8 @@ NavigableDialog {
                         "qrc:/res/baseline-error_outline-24px.svg"
             sourceSize {
                 // The icon should be square so use the height as the width too
-                width: 50
-                height: 50
+                width: 50 * dialog.bigScreenFactor
+                height: 50 * dialog.bigScreenFactor
             }
             visible: !showSpinner
         }
@@ -52,8 +55,8 @@ NavigableDialog {
 
             // Cap the width so the dialog doesn't grow horizontally forever. This
             // will cause word wrap to kick in.
-            Layout.maximumWidth: 400
-            Layout.maximumHeight: 400
+            Layout.maximumWidth: 400 * dialog.bigScreenFactor
+            Layout.maximumHeight: 400 * dialog.bigScreenFactor
         }
     }
 

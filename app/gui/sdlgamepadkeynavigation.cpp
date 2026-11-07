@@ -8,13 +8,21 @@
 
 #define AXIS_NAVIGATION_REPEAT_DELAY 150
 
+// Delay before a held D-pad direction starts repeating, and the interval between repeats
+#define DPAD_REPEAT_INITIAL_DELAY 400
+#define DPAD_REPEAT_INTERVAL 110
+
 SdlGamepadKeyNavigation::SdlGamepadKeyNavigation(StreamingPreferences* prefs)
     : m_Prefs(prefs),
       m_Enabled(false),
       m_UiNavMode(false),
       m_FirstPoll(false),
       m_HasFocus(false),
-      m_LastAxisNavigationEventTime(0)
+      m_LastAxisNavigationEventTime(0),
+      m_RepeatButton(SDL_CONTROLLER_BUTTON_INVALID),
+      m_RepeatKey(Qt::Key_unknown),
+      m_RepeatModifiers(Qt::NoModifier),
+      m_NextRepeatTime(0)
 {
     m_PollingTimer = new QTimer(this);
     connect(m_PollingTimer, &QTimer::timeout, this, &SdlGamepadKeyNavigation::onPollingTimerFired);
@@ -152,25 +160,32 @@ void SdlGamepadKeyNavigation::onPollingTimerFired()
             case SDL_CONTROLLER_BUTTON_DPAD_UP:
                 if (m_UiNavMode) {
                     // Back-tab
-                    sendKey(type, Qt::Key_Tab, Qt::ShiftModifier);
+                    sendRepeatableKey(type, event.cbutton.button, Qt::Key_Tab, Qt::ShiftModifier);
                 }
                 else {
-                    sendKey(type, Qt::Key_Up);
+                    sendRepeatableKey(type, event.cbutton.button, Qt::Key_Up);
                 }
                 break;
             case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
                 if (m_UiNavMode) {
-                    sendKey(type, Qt::Key_Tab);
+                    sendRepeatableKey(type, event.cbutton.button, Qt::Key_Tab);
                 }
                 else {
-                    sendKey(type, Qt::Key_Down);
+                    sendRepeatableKey(type, event.cbutton.button, Qt::Key_Down);
                 }
                 break;
             case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                sendKey(type, Qt::Key_Left);
+                sendRepeatableKey(type, event.cbutton.button, Qt::Key_Left);
                 break;
             case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                sendKey(type, Qt::Key_Right);
+                sendRepeatableKey(type, event.cbutton.button, Qt::Key_Right);
+                break;
+            case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+                // Used by the big-screen UI to switch between pages/categories
+                sendKey(type, Qt::Key_PageUp);
+                break;
+            case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                sendKey(type, Qt::Key_PageDown);
                 break;
             case SDL_CONTROLLER_BUTTON_A:
                 if (m_UiNavMode) {
@@ -215,6 +230,14 @@ void SdlGamepadKeyNavigation::onPollingTimerFired()
             }
             break;
         }
+    }
+
+    // Auto-repeat a held D-pad direction
+    if (m_RepeatButton != SDL_CONTROLLER_BUTTON_INVALID &&
+            (Sint32)(SDL_GetTicks() - m_NextRepeatTime) >= 0) {
+        sendKey(QEvent::Type::KeyPress, m_RepeatKey, m_RepeatModifiers, true);
+        sendKey(QEvent::Type::KeyRelease, m_RepeatKey, m_RepeatModifiers, true);
+        m_NextRepeatTime = SDL_GetTicks() + DPAD_REPEAT_INTERVAL;
     }
 
     // Handle analog sticks by polling
@@ -262,20 +285,46 @@ void SdlGamepadKeyNavigation::onPollingTimerFired()
     }
 }
 
-void SdlGamepadKeyNavigation::sendKey(QEvent::Type type, Qt::Key key, Qt::KeyboardModifiers modifiers)
+void SdlGamepadKeyNavigation::sendKey(QEvent::Type type, Qt::Key key, Qt::KeyboardModifiers modifiers, bool autoRepeat)
 {
     QGuiApplication* app = static_cast<QGuiApplication*>(QGuiApplication::instance());
     QWindow* focusWindow = app->focusWindow();
     if (focusWindow != nullptr) {
-        QKeyEvent keyPressEvent(type, key, modifiers);
+        QKeyEvent keyPressEvent(type, key, modifiers, QString(), autoRepeat);
         app->sendEvent(focusWindow, &keyPressEvent);
     }
+}
+
+void SdlGamepadKeyNavigation::sendRepeatableKey(QEvent::Type type, int button, Qt::Key key, Qt::KeyboardModifiers modifiers)
+{
+    sendKey(type, key, modifiers);
+
+    if (type == QEvent::Type::KeyPress) {
+        // Start repeating this key if the button stays held
+        m_RepeatButton = button;
+        m_RepeatKey = key;
+        m_RepeatModifiers = modifiers;
+        m_NextRepeatTime = SDL_GetTicks() + DPAD_REPEAT_INITIAL_DELAY;
+    }
+    else if (button == m_RepeatButton) {
+        stopKeyRepeat();
+    }
+}
+
+void SdlGamepadKeyNavigation::stopKeyRepeat()
+{
+    m_RepeatButton = SDL_CONTROLLER_BUTTON_INVALID;
+    m_RepeatKey = Qt::Key_unknown;
+    m_RepeatModifiers = Qt::NoModifier;
 }
 
 void SdlGamepadKeyNavigation::updateTimerState()
 {
     if (m_PollingTimer->isActive() && (!m_HasFocus || !m_Enabled)) {
         m_PollingTimer->stop();
+
+        // Don't keep repeating a key from a button press we'll never see released
+        stopKeyRepeat();
     }
     else if (!m_PollingTimer->isActive() && m_HasFocus && m_Enabled) {
         // Flush events on the first poll

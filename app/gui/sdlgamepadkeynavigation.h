@@ -27,7 +27,11 @@ public:
     Q_INVOKABLE int getConnectedGamepads();
 
 private:
-    void sendKey(QEvent::Type type, Qt::Key key, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    void sendKey(QEvent::Type type, Qt::Key key, Qt::KeyboardModifiers modifiers = Qt::NoModifier, bool autoRepeat = false);
+
+    void sendRepeatableKey(QEvent::Type type, int button, Qt::Key key, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+
+    void stopKeyRepeat();
 
     void updateTimerState();
 
@@ -43,4 +47,10 @@ private:
     bool m_FirstPoll;
     bool m_HasFocus;
     Uint32 m_LastAxisNavigationEventTime;
+
+    // State for auto-repeating a held D-pad direction
+    int m_RepeatButton;
+    Qt::Key m_RepeatKey;
+    Qt::KeyboardModifiers m_RepeatModifiers;
+    Uint32 m_NextRepeatTime;
 };
