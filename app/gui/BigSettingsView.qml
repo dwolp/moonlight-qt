@@ -524,6 +524,12 @@ BigScreenPage {
                                 function() { return StreamingPreferences.gamepadMouse },
                                 function(v) { StreamingPreferences.gamepadMouse = v }))
 
+        gamepad.push(boolToggle(qsTr("Show a notice while gamepad mouse mode is active"),
+                                qsTr("Shows red text in the corner of the stream while the gamepad is controlling the mouse."),
+                                function() { return StreamingPreferences.gamepadMouseNotice },
+                                function(v) { StreamingPreferences.gamepadMouseNotice = v },
+                                function() { return StreamingPreferences.gamepadMouse }))
+
         if (SystemProperties.hasDesktopEnvironment) {
             gamepad.push(boolToggle(qsTr("Process gamepad input when Moonlight is in the background"),
                                     qsTr("Allows Moonlight to capture gamepad inputs even if it's not the current window in focus"),

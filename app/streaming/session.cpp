@@ -1561,7 +1561,12 @@ void Session::notifyMouseEmulationMode(bool enabled)
     m_MouseEmulationRefCount += enabled ? 1 : -1;
     SDL_assert(m_MouseEmulationRefCount >= 0);
 
-    // We re-use the status update overlay for mouse mode notification
+    // We re-use the status update overlay for mouse mode notification.
+    // The notice can be turned off in settings; mouse mode itself still works.
+    if (!m_Preferences->gamepadMouseNotice) {
+        return;
+    }
+
     if (m_MouseEmulationRefCount > 0) {
         m_OverlayManager.updateOverlayText(Overlay::OverlayStatusUpdate, "Gamepad mouse mode active\nLong press Start to deactivate");
         m_OverlayManager.setOverlayState(Overlay::OverlayStatusUpdate, true);

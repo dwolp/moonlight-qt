@@ -1528,6 +1528,18 @@ Flickable {
                 }
 
                 CheckBox {
+                    id: gamepadMouseNoticeCheck
+                    width: parent.width
+                    text: qsTr("Show a notice while gamepad mouse mode is active")
+                    font.pointSize: 12
+                    enabled: StreamingPreferences.gamepadMouse
+                    checked: StreamingPreferences.gamepadMouseNotice
+                    onCheckedChanged: {
+                        StreamingPreferences.gamepadMouseNotice = checked
+                    }
+                }
+
+                CheckBox {
                     id: backgroundGamepadCheck
                     width: parent.width
                     text: qsTr("Process gamepad input when Moonlight is in the background")
