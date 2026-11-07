@@ -139,6 +139,7 @@ public:
     Q_PROPERTY(bool richPresence MEMBER richPresence NOTIFY richPresenceChanged)
     Q_PROPERTY(bool gamepadMouse MEMBER gamepadMouse NOTIFY gamepadMouseChanged)
     Q_PROPERTY(bool gamepadMouseNotice MEMBER gamepadMouseNotice NOTIFY gamepadMouseNoticeChanged)
+    Q_PROPERTY(bool ignoreSteamDeckController MEMBER ignoreSteamDeckController NOTIFY ignoreSteamDeckControllerChanged)
     Q_PROPERTY(bool detectNetworkBlocking MEMBER detectNetworkBlocking NOTIFY detectNetworkBlockingChanged)
     Q_PROPERTY(bool showPerformanceOverlay MEMBER showPerformanceOverlay NOTIFY showPerformanceOverlayChanged)
     Q_PROPERTY(AudioConfig audioConfig MEMBER audioConfig NOTIFY audioConfigChanged)
@@ -182,6 +183,7 @@ public:
     bool richPresence;
     bool gamepadMouse;
     bool gamepadMouseNotice;
+    bool ignoreSteamDeckController;
     bool detectNetworkBlocking;
     bool showPerformanceOverlay;
     bool swapMouseButtons;
@@ -230,6 +232,7 @@ signals:
     void richPresenceChanged();
     void gamepadMouseChanged();
     void gamepadMouseNoticeChanged();
+    void ignoreSteamDeckControllerChanged();
     void detectNetworkBlockingChanged();
     void showPerformanceOverlayChanged();
     void mouseButtonsChanged();

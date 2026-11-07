@@ -520,6 +520,11 @@ BigScreenPage {
                                 function() { return !StreamingPreferences.multiController },
                                 function(v) { StreamingPreferences.multiController = !v }))
 
+        gamepad.push(boolToggle(qsTr("Ignore Steam Deck controls when another gamepad is connected"),
+                                qsTr("On a Steam Deck, only the external gamepad is sent to the host while one is connected, so games don't pick the built-in controls as player 1. The built-in controls come back when the external gamepad disconnects."),
+                                function() { return StreamingPreferences.ignoreSteamDeckController },
+                                function(v) { StreamingPreferences.ignoreSteamDeckController = v }))
+
         gamepad.push(boolToggle(qsTr("Enable mouse control with gamepads by holding the 'Start' button"), "",
                                 function() { return StreamingPreferences.gamepadMouse },
                                 function(v) { StreamingPreferences.gamepadMouse = v }))

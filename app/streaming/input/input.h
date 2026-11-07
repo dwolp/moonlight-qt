@@ -176,6 +176,15 @@ private:
 
     void sendGamepadState(GamepadState* state);
 
+    void detachGamepad(GamepadState* state);
+
+    static
+    bool isSteamDeckBuiltInController(uint16_t vendorId, uint16_t productId, const char* name);
+
+    bool isOtherGamepadConnected(SDL_JoystickID exceptId);
+
+    void reattachSteamDeckController(SDL_JoystickID removedId);
+
     void sendGamepadBatteryState(GamepadState* state, SDL_JoystickPowerLevel level);
 
     void handleAbsoluteFingerEvent(SDL_TouchFingerEvent* event);
@@ -205,6 +214,8 @@ private:
 
     SDL_Window* m_Window;
     bool m_MultiController;
+    bool m_IgnoreSteamDeckController;
+    SDL_JoystickID m_RemovingGamepadId;
     bool m_GamepadMouse;
     bool m_SwapMouseButtons;
     bool m_ReverseScrollDirection;

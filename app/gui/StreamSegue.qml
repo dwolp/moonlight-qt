@@ -4,6 +4,7 @@ import QtQuick.Window 2.2
 
 import SdlGamepadKeyNavigation 1.0
 import Session 1.0
+import StreamingPreferences 1.0
 import SystemProperties 1.0
 
 Item {
@@ -152,8 +153,12 @@ Item {
             // in the hintText control itself to synchronize
             // with Session.exec() which requires no concurrent
             // gamepad usage.
-            hintText.text = qsTr("Tip:") + " " + qsTr("Press %1 to disconnect your session").arg(SdlGamepadKeyNavigation.getConnectedGamepads() > 0 ?
+            var hasGamepad = SdlGamepadKeyNavigation.getConnectedGamepads() > 0
+            hintText.text = qsTr("Tip:") + " " + qsTr("Press %1 to disconnect your session").arg(hasGamepad ?
                                                   qsTr("Start+Select+L1+R1") : qsTr("Ctrl+Alt+Shift+Q"))
+            if (window.bigScreen && hasGamepad && StreamingPreferences.gamepadMouse) {
+                hintText.text += "\n" + qsTr("Hold Start to use the gamepad as a mouse. All shortcuts are under Controls on the home screen.")
+            }
 
             // Stop GUI gamepad usage now
             SdlGamepadKeyNavigation.disable()
@@ -226,7 +231,9 @@ Item {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 50
         anchors.horizontalCenter: parent.horizontalCenter
+        width: Math.min(implicitWidth, parent.width - 80)
         font.pointSize: 18
+        horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
 
         wrapMode: Text.Wrap

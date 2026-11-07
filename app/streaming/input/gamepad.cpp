@@ -52,6 +52,122 @@ SdlInputHandler::findStateForGamepad(SDL_JoystickID id)
     return nullptr;
 }
 
+bool SdlInputHandler::isSteamDeckBuiltInController(uint16_t vendorId, uint16_t productId, const char* name)
+{
+    // Valve's VID/PID for the Steam Deck's built-in controls. Under Steam Input,
+    // SDL reports the real device behind each Steam virtual gamepad, but check
+    // the name too in case only that is available.
+    if (vendorId == 0x28de && productId == 0x1205) {
+        return true;
+    }
+
+    return name != nullptr && SDL_strstr(name, "Steam Deck") != nullptr;
+}
+
+bool SdlInputHandler::isOtherGamepadConnected(SDL_JoystickID exceptId)
+{
+    // Look at gamepads we've already attached...
+    for (int i = 0; i < MAX_GAMEPADS; i++) {
+        GamepadState* state = &m_GamepadState[i];
+        if (state->controller != nullptr && state->jsId != exceptId &&
+                !isSteamDeckBuiltInController(SDL_GameControllerGetVendor(state->controller),
+                                              SDL_GameControllerGetProduct(state->controller),
+                                              SDL_GameControllerName(state->controller))) {
+            return true;
+        }
+    }
+
+    // ...and ones that are connected but not attached yet (at stream start)
+    int numJoysticks = SDL_NumJoysticks();
+    for (int i = 0; i < numJoysticks; i++) {
+        if (!SDL_IsGameController(i)) {
+            continue;
+        }
+
+        SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
+        if (id == exceptId || id == m_RemovingGamepadId) {
+            continue;
+        }
+
+        char guidStr[33];
+        SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i), guidStr, sizeof(guidStr));
+        if (m_IgnoreDeviceGuids.contains(guidStr, Qt::CaseInsensitive)) {
+            continue;
+        }
+
+        if (!isSteamDeckBuiltInController(SDL_JoystickGetDeviceVendor(i),
+                                          SDL_JoystickGetDeviceProduct(i),
+                                          SDL_GameControllerNameForIndex(i))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void SdlInputHandler::reattachSteamDeckController(SDL_JoystickID removedId)
+{
+    // Only bring the built-in controls back once no other gamepad is left
+    m_RemovingGamepadId = removedId;
+    if (!isOtherGamepadConnected(removedId)) {
+        int numJoysticks = SDL_NumJoysticks();
+        for (int i = 0; i < numJoysticks; i++) {
+            if (SDL_IsGameController(i) &&
+                    SDL_JoystickGetDeviceInstanceID(i) != removedId &&
+                    findStateForGamepad(SDL_JoystickGetDeviceInstanceID(i)) == nullptr &&
+                    isSteamDeckBuiltInController(SDL_JoystickGetDeviceVendor(i),
+                                                 SDL_JoystickGetDeviceProduct(i),
+                                                 SDL_GameControllerNameForIndex(i))) {
+                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                            "No other gamepads left; attaching Steam Deck built-in controls");
+
+                SDL_ControllerDeviceEvent event = {};
+                event.type = SDL_CONTROLLERDEVICEADDED;
+                event.which = i;
+                handleControllerDeviceEvent(&event);
+                break;
+            }
+        }
+    }
+    m_RemovingGamepadId = -1;
+}
+
+void SdlInputHandler::detachGamepad(GamepadState* state)
+{
+    if (state->mouseEmulationTimer != 0) {
+        Session::get()->notifyMouseEmulationMode(false);
+        SDL_RemoveTimer(state->mouseEmulationTimer);
+    }
+
+    SDL_GameControllerClose(state->controller);
+
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
+    if (state->haptic != nullptr) {
+        SDL_HapticClose(state->haptic);
+    }
+#endif
+
+    // Remove this from the gamepad mask in MC-mode
+    if (m_MultiController) {
+        SDL_assert(m_GamepadMask & (1 << state->index));
+        m_GamepadMask &= ~(1 << state->index);
+    }
+    else {
+        SDL_assert(m_GamepadMask == 0x1);
+    }
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                "Gamepad %d is gone",
+                state->index);
+
+    // Send a final event to let the PC know this gamepad is gone
+    LiSendMultiControllerEvent(state->index, m_GamepadMask,
+                               0, 0, 0, 0, 0, 0, 0);
+
+    // Clear all remaining state from this slot
+    SDL_memset(state, 0, sizeof(*state));
+}
+
 void SdlInputHandler::sendGamepadState(GamepadState* state)
 {
     SDL_assert(m_GamepadMask == 0x1 || m_MultiController);
@@ -537,6 +653,41 @@ void SdlInputHandler::handleControllerDeviceEvent(SDL_ControllerDeviceEvent* eve
             }
         }
 
+        // On a Steam Deck with another gamepad connected, leave the built-in
+        // controls out so the host (and games like RetroArch) only see the
+        // gamepad that's actually being played with. This runs before a slot
+        // is chosen so the other gamepad takes the built-in controls' slot.
+        if (m_IgnoreSteamDeckController) {
+            SDL_JoystickID newId = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+            char newGuidStr[33];
+            SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_GameControllerGetJoystick(controller)),
+                                      newGuidStr, sizeof(newGuidStr));
+
+            if (isSteamDeckBuiltInController(SDL_GameControllerGetVendor(controller),
+                                             SDL_GameControllerGetProduct(controller),
+                                             SDL_GameControllerName(controller))) {
+                if (isOtherGamepadConnected(newId)) {
+                    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                                "Ignoring Steam Deck built-in controls because another gamepad is connected");
+                    SDL_GameControllerClose(controller);
+                    return;
+                }
+            }
+            else if (!m_IgnoreDeviceGuids.contains(newGuidStr, Qt::CaseInsensitive)) {
+                for (int j = 0; j < MAX_GAMEPADS; j++) {
+                    GamepadState* deckState = &m_GamepadState[j];
+                    if (deckState->controller != nullptr &&
+                            isSteamDeckBuiltInController(SDL_GameControllerGetVendor(deckState->controller),
+                                                         SDL_GameControllerGetProduct(deckState->controller),
+                                                         SDL_GameControllerName(deckState->controller))) {
+                        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                                    "Another gamepad connected; detaching Steam Deck built-in controls");
+                        detachGamepad(deckState);
+                    }
+                }
+            }
+        }
+
         // We used to use SDL_GameControllerGetPlayerIndex() here but that
         // can lead to strange issues due to bugs in Windows where an Xbox
         // controller will join as player 2, even though no player 1 controller
@@ -775,38 +926,16 @@ void SdlInputHandler::handleControllerDeviceEvent(SDL_ControllerDeviceEvent* eve
     else if (event->type == SDL_CONTROLLERDEVICEREMOVED) {
         state = findStateForGamepad(event->which);
         if (state != NULL) {
-            if (state->mouseEmulationTimer != 0) {
-                Session::get()->notifyMouseEmulationMode(false);
-                SDL_RemoveTimer(state->mouseEmulationTimer);
+            bool wasSteamDeck = isSteamDeckBuiltInController(SDL_GameControllerGetVendor(state->controller),
+                                                             SDL_GameControllerGetProduct(state->controller),
+                                                             SDL_GameControllerName(state->controller));
+
+            detachGamepad(state);
+
+            // If the last other gamepad went away, use the built-in controls again
+            if (m_IgnoreSteamDeckController && !wasSteamDeck) {
+                reattachSteamDeckController(event->which);
             }
-
-            SDL_GameControllerClose(state->controller);
-
-#if !SDL_VERSION_ATLEAST(2, 0, 9)
-            if (state->haptic != nullptr) {
-                SDL_HapticClose(state->haptic);
-            }
-#endif
-
-            // Remove this from the gamepad mask in MC-mode
-            if (m_MultiController) {
-                SDL_assert(m_GamepadMask & (1 << state->index));
-                m_GamepadMask &= ~(1 << state->index);
-            }
-            else {
-                SDL_assert(m_GamepadMask == 0x1);
-            }
-
-            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                        "Gamepad %d is gone",
-                        state->index);
-
-            // Send a final event to let the PC know this gamepad is gone
-            LiSendMultiControllerEvent(state->index, m_GamepadMask,
-                                       0, 0, 0, 0, 0, 0, 0);
-
-            // Clear all remaining state from this slot
-            SDL_memset(state, 0, sizeof(*state));
         }
     }
 }
@@ -1058,7 +1187,12 @@ int SdlInputHandler::getAttachedGamepadMask()
             SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i),
                                       guidStr, sizeof(guidStr));
 
-            if (!m_IgnoreDeviceGuids.contains(guidStr, Qt::CaseInsensitive))
+            if (!m_IgnoreDeviceGuids.contains(guidStr, Qt::CaseInsensitive) &&
+                    !(m_IgnoreSteamDeckController &&
+                      isSteamDeckBuiltInController(SDL_JoystickGetDeviceVendor(i),
+                                                   SDL_JoystickGetDeviceProduct(i),
+                                                   SDL_GameControllerNameForIndex(i)) &&
+                      isOtherGamepadConnected(SDL_JoystickGetDeviceInstanceID(i))))
             {
                 mask |= (1 << count++);
             }

@@ -583,3 +583,4 @@ macx {
 FORK_VERSION_SUFFIX = -bigscreen.3
 VERSION = "$$cat(version.txt)"
 DEFINES += VERSION_STR=\\\"$$cat(version.txt)$$FORK_VERSION_SUFFIX\\\"
+DEFINES += MOONLIGHT_FORK_DISABLE_UPDATE_CHECK

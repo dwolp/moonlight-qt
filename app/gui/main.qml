@@ -60,6 +60,11 @@ ApplicationWindow {
         bigScreen = SystemProperties.prefersBigScreen ||
                     StreamingPreferences.uiDisplayMode === StreamingPreferences.UI_FULLSCREEN
 
+        // Use the big-screen accent color for buttons, toggles and focus effects
+        if (bigScreen) {
+            Material.accent = bs.accent
+        }
+
         updateBigScreenFont()
 
         SdlGamepadKeyNavigation.enable()

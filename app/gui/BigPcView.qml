@@ -95,6 +95,9 @@ BigScreenPage {
         case "settings":
             window.openSettings()
             break
+        case "controls":
+            stackView.push("qrc:/gui/BigControlsView.qml")
+            break
         case "help":
             Qt.openUrlExternally("https://github.com/moonlight-stream/moonlight-docs/wiki/Setup-Guide")
             break
@@ -426,7 +429,8 @@ BigScreenPage {
         model: {
             var actions = [
                 { id: "add", text: qsTr("Add PC"), icon: "qrc:/res/ic_add_to_queue_white_48px.svg" },
-                { id: "settings", text: qsTr("Settings"), icon: "qrc:/res/settings.svg" }
+                { id: "settings", text: qsTr("Settings"), icon: "qrc:/res/settings.svg" },
+                { id: "controls", text: qsTr("Controls"), icon: "qrc:/res/ic_videogame_asset_white_48px.svg" }
             ]
             if (SystemProperties.hasBrowser) {
                 actions.push({ id: "help", text: qsTr("Help"), icon: "qrc:/res/question_mark.svg" })

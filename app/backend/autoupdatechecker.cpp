@@ -34,6 +34,12 @@ void AutoUpdateChecker::start()
         return;
     }
 
+    // This fork is released separately from upstream Moonlight, so upstream's
+    // update feed would point users at releases that lack the fork's changes.
+#ifdef MOONLIGHT_FORK_DISABLE_UPDATE_CHECK
+    return;
+#endif
+
 #if defined(Q_OS_WIN32) || defined(Q_OS_DARWIN) || defined(STEAM_LINK) || defined(APP_IMAGE) // Only run update checker on platforms without auto-update
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0) && QT_VERSION < QT_VERSION_CHECK(5, 15, 1) && !defined(QT_NO_BEARERMANAGEMENT)
     // HACK: Set network accessibility to work around QTBUG-80947 (introduced in Qt 5.14.0 and fixed in Qt 5.15.1)

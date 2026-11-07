@@ -11,6 +11,8 @@
 
 SdlInputHandler::SdlInputHandler(StreamingPreferences& prefs, int streamWidth, int streamHeight)
     : m_MultiController(prefs.multiController),
+      m_IgnoreSteamDeckController(prefs.ignoreSteamDeckController),
+      m_RemovingGamepadId(-1),
       m_GamepadMouse(prefs.gamepadMouse),
       m_SwapMouseButtons(prefs.swapMouseButtons),
       m_ReverseScrollDirection(prefs.reverseScrollDirection),
@@ -205,12 +207,13 @@ SdlInputHandler::SdlInputHandler(StreamingPreferences& prefs, int streamWidth, i
     }
 #endif
 
+    // getAttachedGamepadMask() looks at m_GamepadState, so clear it first
+    SDL_zero(m_GamepadState);
+
     // Initialize the gamepad mask with currently attached gamepads to avoid
     // causing gamepads to unexpectedly disappear and reappear on the host
     // during stream startup as we detect currently attached gamepads one at a time.
     m_GamepadMask = getAttachedGamepadMask();
-
-    SDL_zero(m_GamepadState);
     SDL_zero(m_LastTouchDownEvent);
     SDL_zero(m_LastTouchUpEvent);
     SDL_zero(m_TouchDownEvent);

@@ -40,6 +40,7 @@
 #define SER_RICHPRESENCE "richpresence"
 #define SER_GAMEPADMOUSE "gamepadmouse"
 #define SER_GAMEPADMOUSENOTICE "gamepadmousenotice"
+#define SER_IGNORESTEAMDECKCONTROLLER "ignoresteamdeckcontroller"
 #define SER_DEFAULTVER "defaultver"
 #define SER_PACKETSIZE "packetsize"
 #define SER_DETECTNETBLOCKING "detectnetblocking"
@@ -144,6 +145,7 @@ void StreamingPreferences::reload()
     richPresence = settings.value(SER_RICHPRESENCE, true).toBool();
     gamepadMouse = settings.value(SER_GAMEPADMOUSE, true).toBool();
     gamepadMouseNotice = settings.value(SER_GAMEPADMOUSENOTICE, true).toBool();
+    ignoreSteamDeckController = settings.value(SER_IGNORESTEAMDECKCONTROLLER, true).toBool();
     detectNetworkBlocking = settings.value(SER_DETECTNETBLOCKING, true).toBool();
     showPerformanceOverlay = settings.value(SER_SHOWPERFOVERLAY, false).toBool();
     packetSize = settings.value(SER_PACKETSIZE, 0).toInt();
@@ -168,8 +170,11 @@ void StreamingPreferences::reload()
                                                         // Try to load from the old preference value too
                                                         static_cast<int>(settings.value(SER_FULLSCREEN, true).toBool() ?
                                                                              recommendedFullScreenMode : WindowMode::WM_WINDOWED)).toInt());
+    // This fork defaults new installs to fullscreen, which uses the big-screen UI.
+    // Installs that still have the old start-windowed preference keep its behavior.
     uiDisplayMode = static_cast<UIDisplayMode>(settings.value(SER_UIDISPLAYMODE,
-                                               static_cast<int>(settings.value(SER_STARTWINDOWED, true).toBool() ? UIDisplayMode::UI_WINDOWED
+                                               static_cast<int>(!settings.contains(SER_STARTWINDOWED) ? UIDisplayMode::UI_FULLSCREEN :
+                                                                settings.value(SER_STARTWINDOWED, true).toBool() ? UIDisplayMode::UI_WINDOWED
                                                                                                                  : UIDisplayMode::UI_MAXIMIZED)).toInt());
     language = static_cast<Language>(settings.value(SER_LANGUAGE,
                                                     static_cast<int>(Language::LANG_AUTO)).toInt());
@@ -345,6 +350,7 @@ void StreamingPreferences::save()
     settings.setValue(SER_RICHPRESENCE, richPresence);
     settings.setValue(SER_GAMEPADMOUSE, gamepadMouse);
     settings.setValue(SER_GAMEPADMOUSENOTICE, gamepadMouseNotice);
+    settings.setValue(SER_IGNORESTEAMDECKCONTROLLER, ignoreSteamDeckController);
     settings.setValue(SER_PACKETSIZE, packetSize);
     settings.setValue(SER_DETECTNETBLOCKING, detectNetworkBlocking);
     settings.setValue(SER_SHOWPERFOVERLAY, showPerformanceOverlay);

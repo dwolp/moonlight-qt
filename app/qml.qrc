@@ -22,6 +22,8 @@
         <file>gui/BigScreenPage.qml</file>
         <file>gui/BigScreenHintBar.qml</file>
         <file>gui/BigScreenActionButton.qml</file>
+        <file>gui/BigScreenMenuItemBackground.qml</file>
+        <file>gui/BigControlsView.qml</file>
         <file>gui/BigPcView.qml</file>
         <file>gui/BigAppView.qml</file>
         <file>gui/BigSettingsView.qml</file>

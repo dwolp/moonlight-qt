@@ -1516,6 +1516,23 @@ Flickable {
                 }
 
                 CheckBox {
+                    id: ignoreSteamDeckControllerCheck
+                    width: parent.width
+                    hoverEnabled: true
+                    text: qsTr("Ignore Steam Deck controls when another gamepad is connected")
+                    font.pointSize: 12
+                    checked: StreamingPreferences.ignoreSteamDeckController
+                    onCheckedChanged: {
+                        StreamingPreferences.ignoreSteamDeckController = checked
+                    }
+
+                    ToolTip.delay: 1000
+                    ToolTip.timeout: 5000
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("On a Steam Deck, only the external gamepad is sent to the host while one is connected, so games don't pick the built-in controls as player 1. The built-in controls come back when the external gamepad disconnects.")
+                }
+
+                CheckBox {
                     id: gamepadMouseCheck
                     hoverEnabled: true
                     width: parent.width
