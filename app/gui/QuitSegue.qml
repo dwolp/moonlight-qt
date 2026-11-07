@@ -48,7 +48,7 @@ Item {
 
     StackView.onDeactivating: {
         // Show the toolbar again
-        toolBar.visible = true
+        toolBar.visible = !window.bigScreen
 
         // Disconnect the signal
         ComputerManager.quitAppCompleted.disconnect(quitAppCompleted)

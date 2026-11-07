@@ -1249,6 +1249,12 @@ Flickable {
                     onActivated : {
                         StreamingPreferences.uiDisplayMode = uiDisplayModeListModel.get(currentIndex).val
                     }
+
+                    hoverEnabled: true
+                    ToolTip.delay: 1000
+                    ToolTip.timeout: 5000
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Fullscreen uses a big-screen interface designed for TVs and gamepads. Changes take effect the next time Moonlight starts.")
                 }
 
                 CheckBox {

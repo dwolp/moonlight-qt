@@ -19,5 +19,11 @@
         <file>gui/NavigableDialog.qml</file>
         <file>gui/CenteredGridView.qml</file>
         <file>gui/CliPair.qml</file>
+        <file>gui/BigScreenPage.qml</file>
+        <file>gui/BigScreenHintBar.qml</file>
+        <file>gui/BigScreenActionButton.qml</file>
+        <file>gui/BigPcView.qml</file>
+        <file>gui/BigAppView.qml</file>
+        <file>gui/BigSettingsView.qml</file>
     </qresource>
 </RCC>
