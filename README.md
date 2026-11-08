@@ -2,7 +2,7 @@
 
 A fork of [Moonlight PC](https://github.com/moonlight-stream/moonlight-qt) with a **big-screen interface built for controllers**, for streaming games from your PC to a TV, a couch PC or a **Steam Deck**.
 
-Moonlight streams games from a PC running [Sunshine](https://github.com/LizardByte/Sunshine) or NVIDIA GameStream. This fork keeps everything Moonlight does and adds a console-style interface: large tiles, everything reachable with a gamepad, and on-screen button hints. The regular desktop interface is still there, unchanged, whenever you want it.
+Moonlight streams games from a PC running [Streamlight](https://github.com/dwolp/Streamlight), my fork of Sunshine and the companion host to this client. Upstream [Sunshine](https://github.com/LizardByte/Sunshine) works too. This fork keeps everything Moonlight does and adds a console-style interface: large tiles, everything reachable with a gamepad, and on-screen button hints. The regular desktop interface is still there, unchanged, whenever you want it.
 
 ![Home screen](docs/screenshots/home.png)
 
